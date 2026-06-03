@@ -27,7 +27,11 @@ export default function Topbar({ onRegister }: TopbarProps) {
         Quản Trị AI Cho Lãnh Đạo — Lê Công Năng
       </div>
       <div className="tb-price">
-        686.000đ <s>3.600K</s>
+        <span className="tb-price-main">686.000đ <s>3.600K</s></span>
+        <span className="tb-shop">
+          <Icon icon="lucide:store" width={12} />
+          Tech Shop
+        </span>
       </div>
       <button className="tb-cta" onClick={onRegister}>
         <Icon icon="lucide:arrow-right" width={13} />

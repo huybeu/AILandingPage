@@ -66,6 +66,13 @@ export default function HeroSection({ onRegister }: HeroSectionProps) {
               Đăng Ký Học Ngay
             </button>
           </div>
+
+          <div className="hero-social-proof rv">
+            <span className="hsp-stars">★★★★★</span>
+            <span className="hsp-text">500+ CEO &amp; Chủ Doanh Nghiệp đã hoàn thành</span>
+            <span className="hsp-sep" />
+            <span className="hsp-text">15 quốc gia</span>
+          </div>
         </div>
 
         {/* ── RIGHT ── */}

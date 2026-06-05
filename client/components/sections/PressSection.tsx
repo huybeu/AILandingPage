@@ -43,10 +43,10 @@ export default function PressSection() {
         </div>
       </div>
 
-      {/* Row 1 — left to right */}
+      {/* Row 1 — left to right: 4× duplicate so seam is never visible */}
       <div className="marquee-outer">
         <div className="marquee-track marquee-ltr">
-          {[...ROW1, ...ROW1].map((logo, i) => (
+          {[...ROW1, ...ROW1, ...ROW1, ...ROW1].map((logo, i) => (
             <LogoItem key={i} src={logo.src} alt={logo.alt} />
           ))}
         </div>
@@ -55,7 +55,7 @@ export default function PressSection() {
       {/* Row 2 — right to left */}
       <div className="marquee-outer">
         <div className="marquee-track marquee-rtl">
-          {[...ROW2, ...ROW2].map((logo, i) => (
+          {[...ROW2, ...ROW2, ...ROW2, ...ROW2].map((logo, i) => (
             <LogoItem key={i} src={logo.src} alt={logo.alt} />
           ))}
         </div>

@@ -33,11 +33,31 @@ export default function ModalForm({ open, onClose, type }: ModalFormProps) {
     };
   }, [open, onClose]);
 
-  const handleSubmit = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
     if (!name.trim())  { alert('Vui lòng nhập họ và tên!'); return; }
     if (!phone.trim()) { alert('Vui lòng nhập số điện thoại!'); return; }
     if (!email.trim()) { alert('Vui lòng nhập email!'); return; }
-    setSubmitted(true);
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), phone: phone.trim(), email: email.trim(), title, company, learnType: type }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'Đăng ký thất bại, vui lòng thử lại.');
+        return;
+      }
+      setSubmitted(true);
+    } catch {
+      alert('Lỗi kết nối. Vui lòng thử lại hoặc gọi 0931 722 777.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!open) return null;
@@ -134,10 +154,11 @@ export default function ModalForm({ open, onClose, type }: ModalFormProps) {
             </div>
 
             <div className="modal-foot" id="m-foot">
-              <button className="btn-submit" onClick={handleSubmit}
+              <button className="btn-submit" onClick={handleSubmit} disabled={loading}
                 style={!isOnline ? { background: 'var(--teal)' } : {}}>
-                <Icon icon="lucide:send" width={15} />
-                Xác Nhận Đăng Ký {isOnline ? 'Online' : 'Offline'} — {price}
+                <Icon icon={loading ? 'lucide:loader-2' : 'lucide:send'} width={15}
+                  style={loading ? { animation: 'spin .8s linear infinite' } : {}} />
+                {loading ? 'Đang gửi...' : `Xác Nhận Đăng Ký ${isOnline ? 'Online' : 'Offline'} — ${price}`}
               </button>
               <div className="modal-terms">Bằng việc đăng ký, bạn đồng ý với điều khoản sử dụng dịch vụ</div>
             </div>

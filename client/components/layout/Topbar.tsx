@@ -23,8 +23,9 @@ export default function Topbar({ onRegister }: TopbarProps) {
   return (
     <div id="topbar">
       <div className="tb-brand">
-        <div className="tb-dot" />
-        Quản Trị AI Cho Lãnh Đạo — Lê Công Năng
+        <span className="tb-brand-name">Lê Công Năng</span>
+        <span style={{ color: 'var(--border)', fontWeight: 400 }}>—</span>
+        Quản Trị AI Cho Lãnh Đạo
       </div>
       <div className="tb-price">
         <span className="tb-price-main">686.000đ <s>3.600K</s></span>

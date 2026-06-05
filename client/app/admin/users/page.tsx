@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@iconify/react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
@@ -10,7 +10,7 @@ type SortDir = 'asc' | 'desc';
 type SortCol = 'name' | 'phone' | 'email' | 'title' | 'company' | 'registeredAt' | 'payStatus' | 'learnType';
 
 interface User {
-  id: string; name: string; phone: string; email: string;
+  id: number; name: string; phone: string; email: string;
   title: string; company: string; registeredAt: string;
   payStatus: PayStatus; learnType: LearnType;
 }
@@ -18,8 +18,8 @@ interface User {
 const PAY_LABEL: Record<PayStatus, string> = {
   paid: 'Đã Thanh Toán', pending: 'Chờ Xác Nhận', unpaid: 'Chưa Thanh Toán',
 };
+const PAY_CYCLE: Record<PayStatus, PayStatus> = { unpaid: 'pending', pending: 'paid', paid: 'unpaid' };
 const PRICE: Record<LearnType, string> = { online: '686.000đ', offline: '979.000đ' };
-const USERS: User[] = [];
 
 function ColFilter({ options, selected, onChange, onClose }: {
   options: { value: string; label: string }[];
@@ -49,7 +49,7 @@ function SortArrow({ col, sortCol, dir }: { col: string; sortCol: string | null;
   const on = sortCol === col;
   return (
     <span className={`adm-sort ${on ? 'active' : ''}`}>
-      <Icon icon="lucide:chevron-up" width={8} color={on && dir === 'asc' ? '#b8882e' : 'currentColor'} />
+      <Icon icon="lucide:chevron-up"   width={8} color={on && dir === 'asc'  ? '#b8882e' : 'currentColor'} />
       <Icon icon="lucide:chevron-down" width={8} color={on && dir === 'desc' ? '#b8882e' : 'currentColor'} />
     </span>
   );
@@ -58,19 +58,54 @@ function SortArrow({ col, sortCol, dir }: { col: string; sortCol: string | null;
 export default function AdminUsersPage() {
   const router = useRouter();
   const [authed, setAuthed] = useState(false);
+  const [token,  setToken]  = useState('');
+
   useEffect(() => {
     const t = localStorage.getItem('admin_token');
-    if (!t) router.replace('/admin/login'); else setAuthed(true);
+    if (!t) { router.replace('/admin/login'); return; }
+    setToken(t);
+    setAuthed(true);
   }, [router]);
 
-  const [search, setSearch] = useState('');
+  const [users,   setUsers]   = useState<User[]>([]);
+  const [total,   setTotal]   = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const [search,  setSearch]  = useState('');
   const [sortCol, setSortCol] = useState<SortCol | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [openFilter, setOpenFilter] = useState<string | null>(null);
-  const [fType, setFType] = useState<string[]>([]);
+  const [fType,   setFType]   = useState<string[]>([]);
   const [fStatus, setFStatus] = useState<string[]>([]);
-  const [fTitle, setFTitle] = useState<string[]>([]);
+  const [fTitle,  setFTitle]  = useState<string[]>([]);
   const [tabType, setTabType] = useState<'all' | 'online' | 'offline'>('all');
+
+  const fetchUsers = useCallback(async (tok: string) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: '200' });
+      if (search)             params.set('search', search);
+      if (tabType !== 'all')  params.set('learnType', tabType);
+      if (fStatus.length === 1) params.set('payStatus', fStatus[0]);
+      if (sortCol)            { params.set('sortCol', sortCol); params.set('sortDir', sortDir); }
+
+      const res = await fetch(`/api/admin/users?${params}`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      if (res.status === 401) { localStorage.removeItem('admin_token'); router.replace('/admin/login'); return; }
+      const data = await res.json();
+      setUsers(data.users ?? []);
+      setTotal(data.total ?? 0);
+    } catch {
+      /* network error — keep existing data */
+    } finally {
+      setLoading(false);
+    }
+  }, [search, tabType, fStatus, sortCol, sortDir, router]);
+
+  useEffect(() => {
+    if (token) fetchUsers(token);
+  }, [token, fetchUsers]);
 
   const handleSort = (col: SortCol) => {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
@@ -78,27 +113,39 @@ export default function AdminUsersPage() {
     setOpenFilter(null);
   };
 
-  const filtered = USERS.filter(u => {
-    const q = search.toLowerCase();
-    const ms = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.phone.includes(q) || u.company.toLowerCase().includes(q);
-    const mt = (fType.length === 0 || fType.includes(u.learnType)) && (tabType === 'all' || u.learnType === tabType);
-    const mp = fStatus.length === 0 || fStatus.includes(u.payStatus);
-    const mr = fTitle.length === 0 || fTitle.includes(u.title);
-    return ms && mt && mp && mr;
-  });
+  const handleUpdatePayStatus = async (user: User) => {
+    const next = PAY_CYCLE[user.payStatus];
+    const res = await fetch(`/api/admin/users/${user.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ payStatus: next }),
+    });
+    if (res.ok) setUsers(prev => prev.map(u => u.id === user.id ? { ...u, payStatus: next } : u));
+  };
 
-  const sorted = sortCol
-    ? [...filtered].sort((a, b) => {
-        const va = String(a[sortCol]).toLowerCase();
-        const vb = String(b[sortCol]).toLowerCase();
-        return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
-      })
-    : filtered;
+  const handleDelete = async (user: User) => {
+    if (!confirm(`Xóa "${user.name}"? Hành động này không thể hoàn tác.`)) return;
+    const res = await fetch(`/api/admin/users/${user.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) { setUsers(prev => prev.filter(u => u.id !== user.id)); setTotal(t => t - 1); }
+  };
 
-  const titles = [...new Set(USERS.map(u => u.title).filter(Boolean))];
-  const cOnline = USERS.filter(u => u.learnType === 'online').length;
-  const cOffline = USERS.filter(u => u.learnType === 'offline').length;
-  const cPaid = USERS.filter(u => u.payStatus === 'paid').length;
+  const handleExport = () => {
+    const a = document.createElement('a');
+    a.href = `/api/admin/export?token=${encodeURIComponent(token)}`;
+    a.download = 'dang-ky.csv';
+    a.click();
+  };
+
+  // Client-side filter for title (multi-select)
+  const filtered = fTitle.length > 0 ? users.filter(u => fTitle.includes(u.title)) : users;
+  const titles   = [...new Set(users.map(u => u.title).filter(Boolean))];
+
+  const cOnline  = users.filter(u => u.learnType === 'online').length;
+  const cOffline = users.filter(u => u.learnType === 'offline').length;
+  const cPaid    = users.filter(u => u.payStatus === 'paid').length;
 
   const Th = ({ col, children, fKey, fOpts, fVal, fSet }: {
     col?: SortCol; children: React.ReactNode;
@@ -137,7 +184,9 @@ export default function AdminUsersPage() {
             <div className="adm-breadcrumb">Trang chủ <span>›</span> Người Dùng</div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="adm-hbtn" title="Làm mới"><Icon icon="lucide:refresh-cw" width={15} /></button>
+            <button className="adm-hbtn" title="Làm mới" onClick={() => fetchUsers(token)}>
+              <Icon icon="lucide:refresh-cw" width={15} />
+            </button>
             <button className="adm-hbtn" title="Cài đặt"><Icon icon="lucide:settings" width={15} /></button>
           </div>
         </header>
@@ -146,10 +195,10 @@ export default function AdminUsersPage() {
           {/* Stats */}
           <div className="adm-stats">
             {[
-              { icon: 'lucide:users',       color: 'gold',   val: USERS.length, label: 'Tổng đăng ký' },
-              { icon: 'lucide:check-circle',color: 'green',  val: cPaid,        label: 'Đã thanh toán' },
-              { icon: 'lucide:monitor',     color: 'blue',   val: cOnline,      label: 'Học Online' },
-              { icon: 'lucide:building-2',  color: 'yellow', val: cOffline,     label: 'Học Offline' },
+              { icon: 'lucide:users',        color: 'gold',   val: total,    label: 'Tổng đăng ký' },
+              { icon: 'lucide:check-circle', color: 'green',  val: cPaid,    label: 'Đã thanh toán' },
+              { icon: 'lucide:monitor',      color: 'blue',   val: cOnline,  label: 'Học Online' },
+              { icon: 'lucide:building-2',   color: 'yellow', val: cOffline, label: 'Học Offline' },
             ].map(s => (
               <div key={s.label} className="adm-stat">
                 <div className={`adm-stat-icon ${s.color}`}>
@@ -170,7 +219,7 @@ export default function AdminUsersPage() {
                 {t !== 'all' && <Icon icon={t === 'online' ? 'lucide:monitor' : 'lucide:building-2'} width={13} />}
                 {t === 'all' ? 'Tất Cả' : t === 'online' ? 'Online' : 'Offline'}
                 <span className="adm-tab-count">
-                  {t === 'all' ? USERS.length : t === 'online' ? cOnline : cOffline}
+                  {t === 'all' ? total : t === 'online' ? cOnline : cOffline}
                 </span>
               </button>
             ))}
@@ -181,7 +230,7 @@ export default function AdminUsersPage() {
             <div className="adm-toolbar-title">
               Danh Sách Đăng Ký
               <span style={{ marginLeft: 8, fontSize: 12, color: '#9099b4', fontWeight: 400 }}>
-                ({sorted.length}/{USERS.length})
+                ({filtered.length}/{total})
               </span>
             </div>
             <div className="adm-search">
@@ -189,9 +238,9 @@ export default function AdminUsersPage() {
               <input type="text" placeholder="Tìm theo tên, email, SĐT..."
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
-            <button className="adm-btn-export">
+            <button className="adm-btn-export" onClick={handleExport}>
               <Icon icon="lucide:download" width={13} />
-              Xuất Excel
+              Xuất CSV
             </button>
           </div>
 
@@ -219,7 +268,15 @@ export default function AdminUsersPage() {
                 </tr>
               </thead>
               <tbody>
-                {sorted.length === 0 && (
+                {loading && filtered.length === 0 && (
+                  <tr><td colSpan={10}>
+                    <div className="adm-empty">
+                      <Icon icon="lucide:loader-2" width={32} color="#4a5168"
+                        style={{ animation: 'spin .8s linear infinite' }} />
+                    </div>
+                  </td></tr>
+                )}
+                {!loading && filtered.length === 0 && (
                   <tr><td colSpan={10}>
                     <div className="adm-empty">
                       <Icon icon="lucide:inbox" width={52} className="adm-empty-icon" color="#4a5168" />
@@ -230,7 +287,7 @@ export default function AdminUsersPage() {
                     </div>
                   </td></tr>
                 )}
-                {sorted.map(user => (
+                {filtered.map(user => (
                   <tr key={user.id}>
                     <td style={{ color: '#9099b4', fontSize: 12 }}>{user.id}</td>
                     <td>
@@ -255,15 +312,19 @@ export default function AdminUsersPage() {
                     </td>
                     <td><span className="adm-cell-muted">{user.registeredAt}</span></td>
                     <td>
-                      <span className={`adm-badge ${user.payStatus}`}>
+                      <span className={`adm-badge ${user.payStatus}`}
+                        title="Click để chuyển trạng thái"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleUpdatePayStatus(user)}>
                         <span className="adm-dot" />{PAY_LABEL[user.payStatus]}
                       </span>
                     </td>
                     <td>
                       <div className="adm-actions">
-                        <button className="adm-action-btn" title="Xem"><Icon icon="lucide:eye" width={13} /></button>
-                        <button className="adm-action-btn" title="Sửa"><Icon icon="lucide:pencil" width={13} /></button>
-                        <button className="adm-action-btn danger" title="Xóa"><Icon icon="lucide:trash-2" width={13} /></button>
+                        <button className="adm-action-btn danger" title="Xóa"
+                          onClick={() => handleDelete(user)}>
+                          <Icon icon="lucide:trash-2" width={13} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -272,16 +333,12 @@ export default function AdminUsersPage() {
             </table>
 
             <div className="adm-pagination">
-              <div className="adm-pag-info">Hiển thị {sorted.length} / {USERS.length} người dùng</div>
-              <div className="adm-pag-pages">
-                <button className="adm-page-btn"><Icon icon="lucide:chevron-left" width={13} /></button>
-                <button className="adm-page-btn active">1</button>
-                <button className="adm-page-btn"><Icon icon="lucide:chevron-right" width={13} /></button>
-              </div>
+              <div className="adm-pag-info">Hiển thị {filtered.length} / {total} người dùng</div>
             </div>
           </div>
         </main>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

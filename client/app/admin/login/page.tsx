@@ -21,12 +21,22 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
-    if (username.trim() === 'admin' && password === 'admin@2025') {
-      localStorage.setItem('admin_token', 'authenticated');
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Sai tên đăng nhập hoặc mật khẩu');
+        return;
+      }
+      localStorage.setItem('admin_token', data.token);
       router.push('/admin/users');
-    } else {
-      setError('Sai tên đăng nhập hoặc mật khẩu');
+    } catch {
+      setError('Lỗi kết nối máy chủ, vui lòng thử lại.');
+    } finally {
       setLoading(false);
     }
   };
@@ -95,7 +105,7 @@ export default function AdminLoginPage() {
         </form>
 
         <div className="adm-login-hint">
-          Tài khoản demo: <code>admin</code> / <code>admin@2025</code>
+          Đăng nhập bằng tài khoản quản trị đã cấu hình
         </div>
       </div>
 

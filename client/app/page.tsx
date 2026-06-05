@@ -18,6 +18,7 @@ import ChoiceModal from '@/components/ui/ChoiceModal';
 import VideoLightbox from '@/components/ui/VideoLightbox';
 import ChatWidget from '@/components/ui/ChatWidget';
 import ThreeBackground from '@/components/ui/ThreeBackground';
+import CursorGlow from '@/components/ui/CursorGlow';
 
 export default function HomePage() {
   const [modalOpen, setModalOpen]   = useState(false);
@@ -53,6 +54,7 @@ export default function HomePage() {
 
   return (
     <>
+      <CursorGlow />
       <ThreeBackground />
 
       <Topbar onRegister={openChoice} />

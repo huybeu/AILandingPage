@@ -209,11 +209,11 @@ export default function AdminUsersPage() {
                     fVal={fTitle} fSet={setFTitle}>Chức Vụ</Th>
                   <Th col="company">Doanh Nghiệp</Th>
                   <Th col="learnType" fKey="learnType"
-                    fOpts={[{ value: 'online', label: '💻 Online — 686.000đ' }, { value: 'offline', label: '🏛️ Offline — 979.000đ' }]}
+                    fOpts={[{ value: 'online', label: 'Online — 686.000đ' }, { value: 'offline', label: 'Offline — 979.000đ' }]}
                     fVal={fType} fSet={setFType}>Hình Thức</Th>
                   <Th col="registeredAt">Ngày Đăng Ký</Th>
                   <Th col="payStatus" fKey="payStatus"
-                    fOpts={[{ value: 'paid', label: '✅ Đã Thanh Toán' }, { value: 'pending', label: '⏳ Chờ Xác Nhận' }, { value: 'unpaid', label: '❌ Chưa Thanh Toán' }]}
+                    fOpts={[{ value: 'paid', label: 'Đã Thanh Toán' }, { value: 'pending', label: 'Chờ Xác Nhận' }, { value: 'unpaid', label: 'Chưa Thanh Toán' }]}
                     fVal={fStatus} fSet={setFStatus}>Thanh Toán</Th>
                   <th></th>
                 </tr>

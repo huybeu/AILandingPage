@@ -67,7 +67,9 @@ export default function PricingSection({ onRegister, seats }: PricingSectionProp
           {/* ONLINE */}
           <div className="pcard rv-l">
             <div className="pcard-head">
-              <div className="pcard-label">💻 ONLINE</div>
+              <div className="pcard-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Icon icon="lucide:monitor" width={13} /> ONLINE
+              </div>
               <div className="pcard-price">
                 <span className="pp-amt">686</span>
                 <span className="pp-suf">K</span>
@@ -99,7 +101,9 @@ export default function PricingSection({ onRegister, seats }: PricingSectionProp
           <div className="pcard rv-r" style={{ borderColor: 'var(--teal)' }}>
             <div className="pcard-ribbon" style={{ background: 'var(--teal)' }}>Offline</div>
             <div className="pcard-head" style={{ background: 'linear-gradient(135deg,rgba(11,168,152,.1),rgba(11,168,152,.03))', borderBottomColor: 'rgba(11,168,152,.15)' }}>
-              <div className="pcard-label" style={{ color: 'var(--teal)' }}>🏛️ OFFLINE</div>
+              <div className="pcard-label" style={{ color: 'var(--teal)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Icon icon="lucide:building-2" width={13} /> OFFLINE
+              </div>
               <div className="pcard-price">
                 <span className="pp-amt" style={{ color: 'var(--teal)' }}>979</span>
                 <span className="pp-suf" style={{ color: 'var(--teal)' }}>K</span>
@@ -156,8 +160,9 @@ export default function PricingSection({ onRegister, seats }: PricingSectionProp
                   </div>
                 ))}
               </div>
-              <div className="pay-note">
-                💡 Sau chuyển khoản, nhắn tin hotline <strong>0931 722 777</strong> kèm tên, email &amp; hình thức học (Online/Offline) để xác nhận trong 30 phút.
+              <div className="pay-note" style={{ display: 'flex', gap: 7, alignItems: 'flex-start' }}>
+                <Icon icon="lucide:lightbulb" width={14} color="var(--gold)" style={{ flexShrink: 0, marginTop: 1 }} />
+                <span>Sau chuyển khoản, nhắn tin hotline <strong>0931 722 777</strong> kèm tên, email &amp; hình thức học (Online/Offline) để xác nhận trong 30 phút.</span>
               </div>
             </div>
             <div className="pay-qr-wrap" style={{ borderTop: 'none', paddingTop: 0, minWidth: 180 }}>

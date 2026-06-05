@@ -21,7 +21,7 @@ export default function ChatWidget() {
   const handleOpen = () => {
     setOpen(true);
     if (messages.length === 0) {
-      setMessages([{ role: 'bot', text: 'Xin chào! 👋 Tôi là trợ lý AI tư vấn về khoá học <strong>Quản Trị AI</strong> của diễn giả Lê Công Năng. Bạn muốn hỏi điều gì?' }]);
+      setMessages([{ role: 'bot', text: 'Xin chào! Tôi là trợ lý AI tư vấn về khoá học <strong>Quản Trị AI</strong> của diễn giả Lê Công Năng. Bạn muốn hỏi điều gì?' }]);
     }
   };
 
@@ -34,7 +34,7 @@ export default function ChatWidget() {
     const newHist: ChatMessage[] = [...history, { role: 'user', content: text }];
     setHistory(newHist);
     setLoading(true);
-    setMessages((prev) => [...prev, { role: 'bot', text: '💬 Đang trả lời...' }]);
+    setMessages((prev) => [...prev, { role: 'bot', text: 'Đang trả lời...' }]);
     try {
       const reply = await sendChatMessage(newHist);
       setMessages((prev) => [...prev.slice(0, -1), { role: 'bot', text: reply }]);

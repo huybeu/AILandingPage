@@ -19,7 +19,8 @@ export default function ModalForm({ open, onClose, type }: ModalFormProps) {
 
   const isOnline = type === 'online';
   const price = isOnline ? '686.000đ' : '979.000đ';
-  const priceLabel = isOnline ? '💻 Online — Zoom / Live Stream' : '🏛️ Offline — Học Trực Tiếp';
+  const priceIcon  = isOnline ? 'lucide:monitor' : 'lucide:building-2';
+  const priceLabel = isOnline ? 'Online — Zoom / Live Stream' : 'Offline — Học Trực Tiếp';
 
   useEffect(() => {
     if (!open) return;
@@ -56,7 +57,10 @@ export default function ModalForm({ open, onClose, type }: ModalFormProps) {
                 border: `1px solid ${isOnline ? 'rgba(200,148,42,.4)' : 'rgba(11,168,152,.4)'}`,
                 color: isOnline ? 'var(--gold-l)' : 'var(--teal)',
                 fontSize: 11, fontWeight: 700, marginRight: 8,
-              }}>{priceLabel}</span>
+              }}>
+                <Icon icon={priceIcon} width={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+                {priceLabel}
+              </span>
               Điền thông tin — đội ngũ xác nhận trong 30 phút
             </div>
           </div>
@@ -128,8 +132,9 @@ export default function ModalForm({ open, onClose, type }: ModalFormProps) {
                   <div className="mp-qr-lbl">Quét QR chuyển khoản</div>
                 </div>
               </div>
-              <div className="mp-note">
-                💡 Sau khi chuyển khoản, nhắn tin SMS/Zalo <strong>0931 722 777</strong> kèm tên, email &amp; hình thức học (<strong>{isOnline ? 'Online' : 'Offline'}</strong>) để xác nhận.
+              <div className="mp-note" style={{ display: 'flex', gap: 7, alignItems: 'flex-start' }}>
+                <Icon icon="lucide:lightbulb" width={14} color="var(--gold)" style={{ flexShrink: 0, marginTop: 1 }} />
+                <span>Sau khi chuyển khoản, nhắn tin SMS/Zalo <strong>0931 722 777</strong> kèm tên, email &amp; hình thức học (<strong>{isOnline ? 'Online' : 'Offline'}</strong>) để xác nhận.</span>
               </div>
             </div>
 
@@ -144,7 +149,9 @@ export default function ModalForm({ open, onClose, type }: ModalFormProps) {
           </>
         ) : (
           <div className="modal-success show">
-            <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+            <div style={{ marginBottom: 16 }}>
+              <Icon icon="lucide:party-popper" width={52} color="var(--gold-l)" />
+            </div>
             <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 24, fontWeight: 900, marginBottom: 8 }}>
               Đăng Ký Thành Công!
             </h3>

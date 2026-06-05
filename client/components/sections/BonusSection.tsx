@@ -71,7 +71,7 @@ const CheckItem = () => (
     background: 'rgba(26,148,98,.12)',
     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
   }}>
-    <Icon icon="lucide:check" width={11} color="var(--green)" strokeWidth={2.5} />
+    <Icon icon="lucide:check" width={11} color="var(--green)" />
   </div>
 );
 
@@ -80,22 +80,28 @@ export default function BonusSection() {
     <section id="bonus">
       <div className="wrap">
         <div style={{ textAlign: 'center', maxWidth: 700, margin: '0 auto' }}>
-          <div className="rv bonus-badge">🎁 QUÀ TẶNG ĐẶC BIỆT — TẶNG KÈM MIỄN PHÍ KHI ĐĂNG KÝ</div>
+          <div className="rv bonus-badge">
+            <Icon icon="lucide:gift" width={14} color="var(--gold-l)" />
+            QUÀ TẶNG ĐẶC BIỆT — TẶNG KÈM MIỄN PHÍ KHI ĐĂNG KÝ
+          </div>
           <h2 className="h2 rv" style={{ fontSize: 'clamp(26px,4.5vw,46px)' }}>
             Mang Về <span className="gold">6 Giám Đốc Chuyên Môn AI</span>
-            <br />
-            Vận Hành Doanh Nghiệp Của Bạn
+            <br />Vận Hành Doanh Nghiệp Của Bạn
           </h2>
           <p className="lead rv" style={{ fontSize: 15.5 }}>
             Mỗi trợ lý được{' '}
-            <strong style={{ color: 'var(--text)' }}>huấn luyện cá nhân hoá</strong> theo đặc thù công ty bạn — không phải AI đại trà.
-            Như có 6 nhân sự cấp cao làm việc{' '}
+            <strong style={{ color: 'var(--text)' }}>huấn luyện cá nhân hoá</strong> theo đặc thù
+            công ty bạn — không phải AI đại trà. Như có 6 nhân sự cấp cao làm việc{' '}
             <strong style={{ color: 'var(--gold-l)' }}>24/7 với chi phí 0đ/tháng</strong>.
           </p>
           <div className="rv" style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 20, flexWrap: 'wrap' }}>
-            {['Không cần nhân sự IT', 'Bắt đầu trong ngày', 'Chi phí duy trì: 0đ'].map((t) => (
-              <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--text-dim)' }}>
-                <CheckItem /> {t}
+            {[
+              { icon: 'lucide:cpu', label: 'Không cần nhân sự IT' },
+              { icon: 'lucide:rocket',  label: 'Bắt đầu trong ngày' },
+              { icon: 'lucide:badge-dollar-sign', label: 'Chi phí duy trì: 0đ' },
+            ].map((t) => (
+              <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--text-dim)' }}>
+                <Icon icon={t.icon} width={14} color="var(--green)" /> {t.label}
               </div>
             ))}
           </div>

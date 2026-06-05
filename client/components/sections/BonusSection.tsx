@@ -10,7 +10,7 @@ const BONUSES = [
     title: 'Giám Đốc Marketing AI',
     desc: 'Viết content đa kênh, kịch bản video, caption đúng Brand Voice của bạn — không cần brief lại mỗi lần',
     tasks: ['Bài viết MXH', 'Kịch bản video', 'Email marketing'],
-    featured: true,
+    featured: false,
   },
   {
     badge: 'Sales',
@@ -111,8 +111,8 @@ export default function BonusSection() {
           {BONUSES.map((b) => (
             <div
               key={b.title}
-              className={`bcard rv${b.featured ? ' bcard-featured' : ''}`}
-              style={b.special ? { borderColor: 'var(--gold)', background: 'linear-gradient(135deg,rgba(200,148,42,.07),rgba(200,148,42,.02))' } : {}}
+              className="bcard rv"
+              style={{}}
             >
               <div className="bcard-badge" style={b.badgeStyle}>{b.badge}</div>
               <div className="bc-ico">

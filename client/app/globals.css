@@ -227,12 +227,12 @@ img { display: block; max-width: 100%; }
 #bonus{ padding:80px 0; background:var(--bg2); }
 .bonus-badge{ display:inline-flex; align-items:center; gap:8px; padding:7px 18px; background:linear-gradient(90deg,var(--gold-dim),rgba(11,168,152,.06)); border:1px solid var(--gold); border-radius:30px; font-size:11px; font-weight:800; color:var(--gold-l); margin-bottom:14px; }
 .bonus-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:36px; }
-.bcard{ background:var(--card); border:1px solid rgba(0,0,0,.07); border-radius:var(--r-lg); padding:22px; text-align:center; transition:transform .25s,border-color .25s,box-shadow .25s; position:relative; overflow:hidden; }
+.bcard{ background:var(--card); border:1px solid rgba(0,0,0,.07); border-radius:var(--r-lg); padding:22px; text-align:center; transition:transform .25s,border-color .25s,box-shadow .25s; position:relative; overflow:hidden; display:flex; flex-direction:column; }
 .bcard:hover{ transform:translateY(-4px); border-color:rgba(200,148,42,.2); box-shadow:0 8px 30px rgba(0,0,0,.07); }
 .bcard::before{ content:''; position:absolute; inset:0; background:radial-gradient(circle at 50% 0%,rgba(200,148,42,.03) 0%,transparent 70%); }
 .bc-ico{ width:52px; height:52px; border-radius:12px; background:var(--gold-dim); border:1px solid rgba(200,148,42,.25); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:22px; }
 .bc-title{ font-size:13.5px; font-weight:800; margin-bottom:7px; color:var(--text); }
-.bc-desc{ font-size:12px; color:var(--text-dim); line-height:1.62; }
+.bc-desc{ font-size:12px; color:var(--text-dim); line-height:1.62; flex:1; }
 .bcard-badge{ display:inline-block; padding:4px 12px; background:var(--gold-dim); border:1px solid rgba(200,148,42,.25); border-radius:20px; font-size:10px; font-weight:800; letter-spacing:1px; color:var(--gold-l); margin-bottom:12px; text-transform:uppercase; }
 .bcard-featured{ border-color:rgba(200,148,42,.25); background:linear-gradient(135deg,rgba(200,148,42,.05),rgba(200,148,42,.02)); }
 .bcard-tasks{ display:flex; flex-direction:column; gap:4px; margin-top:12px; padding-top:12px; border-top:1px solid rgba(0,0,0,.06); }

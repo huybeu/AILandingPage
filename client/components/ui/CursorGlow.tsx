@@ -1,198 +1,154 @@
 'use client';
-
 import { useEffect, useRef } from 'react';
 
-const useCanvasCursor = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+export default function CursorGlow() {
+  const dotRef    = useRef<HTMLDivElement>(null);
+  const ringRef   = useRef<HTMLDivElement>(null);
+  const glowRef   = useRef<HTMLDivElement>(null);
+  const sparksRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!canvasRef.current) return;
+    const dot     = dotRef.current;
+    const ringEl  = ringRef.current;
+    const glowEl  = glowRef.current;
+    const sparksC = sparksRef.current;
+    if (!dot || !ringEl || !glowEl || !sparksC) return;
 
-    type ExtendedCtx = CanvasRenderingContext2D & { running?: boolean; frame?: number };
+    let mouse    = { x: -400, y: -400 };
+    let ring     = { x: -400, y: -400 };
+    let glow     = { x: -400, y: -400 };
+    let hovering = false;
+    let ready    = false;
+    let raf: number;
 
-    let ctx: ExtendedCtx | null = null;
-    let f: any;
-    let e = 0;
-    let pos = { x: 0, y: 0 };
-    let lines: any[] = [];
-    const E = { debug: true, friction: 0.5, trails: 20, size: 50, dampening: 0.25, tension: 0.98 };
+    /* ── mouse move ─────────────────────────────────────── */
+    const onMove = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
 
-    function Oscillator(this: any, options: any = {}) {
-      this.phase     = options.phase     || 0;
-      this.offset    = options.offset    || 0;
-      this.frequency = options.frequency || 0.001;
-      this.amplitude = options.amplitude || 1;
-    }
-    Oscillator.prototype.update = function () {
-      this.phase += this.frequency;
-      e = this.offset + Math.sin(this.phase) * this.amplitude;
-      return e;
-    };
-    Oscillator.prototype.value = function () { return e; };
-
-    function Node(this: any) { this.x = 0; this.y = 0; this.vy = 0; this.vx = 0; }
-
-    function Line(this: any, options: any = {}) {
-      this.spring  = (options.spring || 0.45) + (0.1 * Math.random() - 0.02);
-      this.friction = E.friction + (0.01 * Math.random() - 0.002);
-      this.nodes   = [];
-      for (let i = 0; i < E.size; i++) {
-        const node = new (Node as any)();
-        node.x = pos.x; node.y = pos.y;
-        this.nodes.push(node);
+      if (!ready) {
+        ready = true;
+        ring.x = e.clientX; ring.y = e.clientY;
+        glow.x = e.clientX; glow.y = e.clientY;
+        document.body.style.cursor = 'none';
+        dot.style.opacity    = '1';
+        ringEl.style.opacity = '0.75';
+        glowEl.style.opacity = '1';
       }
-    }
-    Line.prototype.update = function () {
-      let spring = this.spring;
-      let node = this.nodes[0];
-      node.vx += (pos.x - node.x) * spring;
-      node.vy += (pos.y - node.y) * spring;
-      for (let i = 0, len = this.nodes.length; i < len; i++) {
-        node = this.nodes[i];
-        if (i > 0) {
-          const prev = this.nodes[i - 1];
-          node.vx += (prev.x - node.x) * spring;
-          node.vy += (prev.y - node.y) * spring;
-          node.vx += prev.vx * E.dampening;
-          node.vy += prev.vy * E.dampening;
-        }
-        node.vx *= this.friction; node.vy *= this.friction;
-        node.x  += node.vx;      node.y  += node.vy;
-        spring  *= E.tension;
-      }
-    };
-    Line.prototype.draw = function () {
-      if (!ctx) return;
-      let x = this.nodes[0].x, y = this.nodes[0].y;
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      for (let i = 1, len = this.nodes.length - 2; i < len; i++) {
-        const cur  = this.nodes[i];
-        const next = this.nodes[i + 1];
-        x = 0.5 * (cur.x + next.x);
-        y = 0.5 * (cur.y + next.y);
-        ctx.quadraticCurveTo(cur.x, cur.y, x, y);
-      }
-      if (this.nodes.length > 2) {
-        const i = this.nodes.length - 2;
-        ctx.quadraticCurveTo(this.nodes[i].x, this.nodes[i].y, this.nodes[i + 1].x, this.nodes[i + 1].y);
-      }
-      ctx.stroke();
-      ctx.closePath();
+
+      const t = e.target as Element;
+      hovering = !!t.closest('button, a, [role="button"], input, label, select');
     };
 
-    function createLines() {
-      lines = [];
-      for (let i = 0; i < E.trails; i++)
-        lines.push(new (Line as any)({ spring: 0.4 + (i / E.trails) * 0.025 }));
-    }
+    /* ── click sparks ────────────────────────────────────── */
+    const COLORS = ['#c8942a','#0ba898','#c8942a','#0ba898','#c8942a','#0ba898','#c8942a','#0ba898'];
+    const onClick = (e: MouseEvent) => {
+      if (!ready) return;
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const dist  = 30 + Math.random() * 22;
+        const tx    = Math.cos(angle) * dist;
+        const ty    = Math.sin(angle) * dist;
 
-    function handlePointerMove(e: MouseEvent | TouchEvent) {
-      if ('touches' in e && e.touches.length > 0) {
-        pos.x = e.touches[0].pageX;
-        pos.y = e.touches[0].pageY;
-      } else if (!('touches' in e)) {
-        pos.x = e.clientX;
-        pos.y = e.clientY;
+        const s = document.createElement('div');
+        Object.assign(s.style, {
+          position:     'fixed',
+          top:          `${e.clientY - 3}px`,
+          left:         `${e.clientX - 3}px`,
+          width:        '6px',
+          height:       '6px',
+          borderRadius: '50%',
+          background:   COLORS[i],
+          pointerEvents:'none',
+          zIndex:       '100000',
+          opacity:      '1',
+          transition:   'transform 0.55s ease-out, opacity 0.55s ease-out',
+        });
+        sparksC.appendChild(s);
+
+        requestAnimationFrame(() => {
+          s.style.transform = `translate(${tx}px,${ty}px)`;
+          s.style.opacity   = '0';
+        });
+
+        setTimeout(() => s.remove(), 620);
       }
-      if (e.cancelable) e.preventDefault();
-    }
+    };
 
-    function handleTouchStart(e: TouchEvent) {
-      if (e.touches.length === 1) { pos.x = e.touches[0].pageX; pos.y = e.touches[0].pageY; }
-    }
+    /* ── RAF loop ────────────────────────────────────────── */
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
 
-    function render() {
-      if (!ctx || ctx.running === false) return;
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      ctx.globalCompositeOperation = 'lighter';
-      try {
-        const hue = Math.round(f.update());
-        ctx.strokeStyle = `hsla(${hue},50%,50%,0.2)`;
-        ctx.lineWidth   = 1;
-        for (const line of lines) { line.update(); line.draw(); }
-        if (ctx.frame !== undefined) ctx.frame++;
-        window.requestAnimationFrame(render);
-      } catch (err) {
-        console.error(err);
-        if (ctx) ctx.running = false;
-      }
-    }
+      ring.x += (mouse.x - ring.x) * 0.18;
+      ring.y += (mouse.y - ring.y) * 0.18;
+      glow.x += (mouse.x - glow.x) * 0.055;
+      glow.y += (mouse.y - glow.y) * 0.055;
 
-    function resizeCanvas() {
-      if (!canvasRef.current) return;
-      canvasRef.current.width  = window.innerWidth;
-      canvasRef.current.height = window.innerHeight;
-    }
+      /* dot — snaps to cursor exactly */
+      dot.style.transform = `translate(${mouse.x - 4}px,${mouse.y - 4}px)`;
 
-    const handleFocus = () => { if (ctx && !ctx.running) { ctx.running = true; render(); } };
-    const handleBlur  = () => { if (ctx) ctx.running = true; };
+      /* ring — lerps, reacts to hover */
+      const rSize = hovering ? 48 : 32;
+      ringEl.style.transform   = `translate(${ring.x - rSize / 2}px,${ring.y - rSize / 2}px)`;
+      ringEl.style.width       = `${rSize}px`;
+      ringEl.style.height      = `${rSize}px`;
+      ringEl.style.borderColor = hovering ? '#0ba898' : '#c8942a';
+      ringEl.style.opacity     = hovering ? '0.95' : '0.75';
 
-    function onFirstMove(e: MouseEvent | TouchEvent) {
-      document.removeEventListener('mousemove', onFirstMove as any);
-      document.removeEventListener('touchstart', onFirstMove as any);
-      document.addEventListener('mousemove',  handlePointerMove);
-      document.addEventListener('touchmove',  handlePointerMove, { passive: true });
-      document.addEventListener('touchstart', handleTouchStart);
-      handlePointerMove(e);
-      createLines();
-      render();
-    }
+      /* glow — slow spotlight */
+      glowEl.style.transform = `translate(${glow.x - 160}px,${glow.y - 160}px)`;
+    };
 
-    const canvas = canvasRef.current;
-    ctx = canvas.getContext('2d') as ExtendedCtx;
-    if (!ctx) return;
-    ctx.running = true;
-    ctx.frame   = 1;
-
-    f = new (Oscillator as any)({
-      phase: Math.random() * 2 * Math.PI,
-      amplitude: 85,
-      frequency: 0.0015,
-      offset: 285,
-    });
-
-    document.addEventListener('mousemove',  onFirstMove as any);
-    document.addEventListener('touchstart', onFirstMove as any);
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('focus', handleFocus);
-    window.addEventListener('blur',  handleBlur);
-
-    resizeCanvas();
-    pos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-    createLines();
-    render();
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('click', onClick);
+    tick();
 
     return () => {
-      if (ctx) ctx.running = false;
-      document.removeEventListener('mousemove',  onFirstMove as any);
-      document.removeEventListener('touchstart', onFirstMove as any);
-      document.removeEventListener('mousemove',  handlePointerMove);
-      document.removeEventListener('touchmove',  handlePointerMove);
-      document.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('blur',  handleBlur);
+      cancelAnimationFrame(raf);
+      document.body.style.cursor = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('click', onClick);
     };
   }, []);
 
-  return canvasRef;
-};
-
-export default function CursorGlow() {
-  const canvasRef = useCanvasCursor();
   return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        width: '100%',
-        height: '100vh',
-        pointerEvents: 'none',
-        zIndex: 9999,
-      }}
-    />
+    <>
+      {/* Gold dot — snaps to cursor */}
+      <div ref={dotRef} style={{
+        position: 'fixed', top: 0, left: 0,
+        width: 8, height: 8, borderRadius: '50%',
+        background: '#c8942a',
+        pointerEvents: 'none', zIndex: 99999,
+        opacity: 0, transition: 'opacity 0.3s',
+        willChange: 'transform',
+      }} />
+
+      {/* Ring — lerps behind cursor, teal on hover */}
+      <div ref={ringRef} style={{
+        position: 'fixed', top: 0, left: 0,
+        width: 32, height: 32, borderRadius: '50%',
+        border: '2px solid #c8942a',
+        pointerEvents: 'none', zIndex: 99998,
+        opacity: 0,
+        transition: 'border-color 0.2s, width 0.15s, height 0.15s',
+        willChange: 'transform',
+      }} />
+
+      {/* Radial glow — slow spotlight effect */}
+      <div ref={glowRef} style={{
+        position: 'fixed', top: 0, left: 0,
+        width: 320, height: 320, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(200,148,42,0.08) 0%, transparent 68%)',
+        pointerEvents: 'none', zIndex: 99997,
+        opacity: 0,
+        willChange: 'transform',
+      }} />
+
+      {/* Sparks portal */}
+      <div ref={sparksRef} style={{
+        position: 'fixed', inset: 0,
+        pointerEvents: 'none', zIndex: 100000,
+      }} />
+    </>
   );
 }

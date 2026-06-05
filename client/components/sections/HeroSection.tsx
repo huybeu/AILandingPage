@@ -1,5 +1,6 @@
 import { Icon } from '@iconify/react';
 import TestimonialCarousel from '@/components/ui/TestimonialCarousel';
+import { AuroraText } from '@/components/ui/AuroraText';
 
 interface HeroSectionProps {
   onRegister: () => void;
@@ -37,7 +38,7 @@ export default function HeroSection({ onRegister }: HeroSectionProps) {
           </div>
           <h1 className="hero-h1 rv">
             Tư Duy Chiến Lược<br />
-            &amp; <em>&ldquo;Quản Trị AI&rdquo;</em><br />
+            &amp; &ldquo;<AuroraText>Quản Trị AI</AuroraText>&rdquo;<br />
             Cho Lãnh Đạo
           </h1>
           <p className="hero-sub rv">

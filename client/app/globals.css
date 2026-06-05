@@ -74,7 +74,7 @@ img { display: block; max-width: 100%; }
 .hero-eyebrow{ display:flex; align-items:center; gap:10px; margin-bottom:20px; }
 .ey-line{ width:48px; height:1.5px; background:var(--teal); }
 .ey-text{ font-size:10px; font-weight:700; letter-spacing:3px; color:var(--teal); text-transform:uppercase; }
-.hero-h1{ font-family:'Playfair Display',serif; font-size:clamp(34px,5vw,66px); font-weight:900; line-height:1.07; margin-bottom:24px; color:var(--text); }
+.hero-h1{ font-family:'Playfair Display',serif; font-size:clamp(32px,4.4vw,58px); font-weight:900; line-height:1.1; margin-bottom:24px; color:var(--text); }
 .hero-h1 em{ color:var(--gold); font-style:normal; }
 .hero-sub{ font-size:15.5px; color:var(--text-dim); line-height:1.8; margin-bottom:30px; max-width:500px; }
 .hero-pills{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:36px; }
@@ -191,11 +191,16 @@ img { display: block; max-width: 100%; }
 
 /* PRESS */
 #press{ padding:72px 0; background:var(--bg); }
-.press-grid{ display:grid; grid-template-columns:repeat(9,1fr); gap:10px; margin-top:28px; }
-@media(max-width:860px){ .press-grid{ grid-template-columns:repeat(4,1fr); } }
-@media(max-width:440px){ .press-grid{ grid-template-columns:repeat(3,1fr); } }
-.logo-box{ height:64px; border-radius:var(--r-md); background:#fff; display:flex; align-items:center; justify-content:center; padding:8px 12px; transition:transform .2s,box-shadow .2s; cursor:default; overflow:hidden; border:1px solid rgba(0,0,0,.06); }
-.logo-box:hover{ transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.1); }
+/* Marquee rows */
+.marquee-outer{ overflow:hidden; -webkit-mask-image:linear-gradient(to right,transparent,#000 10%,#000 90%,transparent); mask-image:linear-gradient(to right,transparent,#000 10%,#000 90%,transparent); }
+.marquee-outer + .marquee-outer{ margin-top:10px; }
+.marquee-track{ display:flex; gap:10px; width:max-content; }
+.marquee-ltr{ animation:marquee-ltr 30s linear infinite; }
+.marquee-rtl{ animation:marquee-rtl 30s linear infinite; }
+@keyframes marquee-ltr{ 0%{ transform:translateX(0) } 100%{ transform:translateX(-50%) } }
+@keyframes marquee-rtl{ 0%{ transform:translateX(-50%) } 100%{ transform:translateX(0) } }
+.logo-box{ height:62px; width:148px; flex-shrink:0; border-radius:var(--r-md); background:#fff; display:flex; align-items:center; justify-content:center; padding:8px 14px; border:1px solid rgba(0,0,0,.06); overflow:hidden; transition:box-shadow .2s; }
+.logo-box:hover{ box-shadow:0 6px 20px rgba(0,0,0,.1); }
 .logo-box img{ width:100%; height:100%; object-fit:contain; display:block; }
 
 /* SPEAKER */

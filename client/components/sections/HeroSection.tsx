@@ -38,7 +38,7 @@ export default function HeroSection({ onRegister }: HeroSectionProps) {
           </div>
           <h1 className="hero-h1 rv">
             Tư Duy Chiến Lược<br />
-            &amp; &ldquo;<AuroraText>Quản Trị AI</AuroraText>&rdquo;<br />
+            Và &ldquo;<AuroraText>Quản Trị AI</AuroraText>&rdquo;<br />
             Cho Lãnh Đạo
           </h1>
           <p className="hero-sub rv">
